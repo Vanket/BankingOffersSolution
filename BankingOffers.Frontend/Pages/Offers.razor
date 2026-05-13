@@ -1,0 +1,211 @@
+﻿@page "/offers"
+@using BankingOffers.Frontend.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject AuthenticationStateProvider AuthState
+@implements IDisposable
+
+<MudText Typo="Typo.h4" Class="mb-4" GutterBottom="true">🏦 Кредитные предложения</MudText>
+
+@if (products == null)
+{
+    <div class="d-flex justify-center align-center" style="height: 50vh;">
+        <MudStack AlignItems="AlignItems.Center">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            <MudText>Загружаем лучшие предложения...</MudText>
+        </MudStack>
+    </div>
+}
+else if (products.Length == 0)
+{
+    <MudAlert Severity="Severity.Info" Variant="Variant.Filled" Class="my-2">
+        Пока нет доступных предложений. Данные обновляются...
+    </MudAlert>
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mt-2" />
+}
+else
+{
+    <MudGrid>
+        @foreach (var product in products)
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <MudCard Elevation="3" Class="h-100 d-flex flex-column hover-card">
+                    <MudCardHeader>
+                        <CardHeaderAvatar>
+                            <MudAvatar Style="@($"background-color:{GetBankColor(product.BankName)}; color:white; font-weight:bold;")">
+                                @(product.BankName.Length > 0 ? product.BankName.Substring(0, 1) : "?")
+                            </MudAvatar>
+                        </CardHeaderAvatar>
+                        <CardHeaderContent>
+                            <MudText Typo="Typo.h6">@product.BankName</MudText>
+                            <MudText Typo="Typo.body2" Color="Color.Secondary" Style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                @product.ProductName
+                            </MudText>
+                        </CardHeaderContent>
+                        <CardHeaderActions>
+                            <!-- КНОПКА ИЗБРАННОГО -->
+                            <!-- Если ID в списке любимых - сердечко закрашено, иначе - контур -->
+                            <MudIconButton Icon="@(favoriteIds.Contains(product.Id) ? Icons.Material.Filled.Favorite : Icons.Material.Filled.FavoriteBorder)"
+                                           Color="Color.Error"
+                                           OnClick="@(() => ToggleFavorite(product.Id))"
+                                           Title="Добавить в избранное" />
+                        </CardHeaderActions>
+                    </MudCardHeader>
+
+                    <MudCardContent Class="flex-grow-1">
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" Class="mb-3">
+                            <div>
+                                <MudText Typo="Typo.caption">Ставка</MudText>
+                                <MudText Typo="Typo.h5" Color="Color.Primary"><b>@product.InterestRate.ToString("0.##")%</b></MudText>
+                            </div>
+                            <div class="text-end">
+                                <MudText Typo="Typo.caption">Сумма до</MudText>
+                                <MudText Typo="Typo.h6">@product.MaxAmount.ToString("N0") ₽</MudText>
+                            </div>
+                        </MudStack>
+
+                        <MudDivider />
+
+                        <MudStack Row="true" Class="mt-3" AlignItems="AlignItems.Center">
+                            <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Color="Color.Default" />
+                            <MudText Typo="Typo.body2">
+                                Срок: <b>до @(product.MaxTermInMonths / 12) лет</b>
+                            </MudText>
+                        </MudStack>
+                    </MudCardContent>
+
+                    <MudCardActions>
+                        @{
+                            // Логика исправления ссылки прямо здесь
+                            var url = product.Url;
+                            if (!string.IsNullOrEmpty(url) && !url.StartsWith("http"))
+                            {
+                                // Это "костыль", но рабочий. В идеале это надо делать на бэкенде.
+                                if (product.BankName.Contains("ВТБ")) url = "https://www.vtb.ru" + url;
+                                else if (product.BankName.Contains("Сбер")) url = "https://www.sberbank.ru" + url;
+                                else if (product.BankName.Contains("Альфа")) url = "https://alfabank.ru" + url;
+                            }
+                        }
+
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   FullWidth="true"
+                                   Href="@url"
+                                   Target="_blank"
+                                   Rel="noopener noreferrer"
+                                   Disabled="@string.IsNullOrEmpty(url)"
+                                   EndIcon="@Icons.Material.Filled.ArrowOutward">
+                            Подробнее
+                        </MudButton>
+                    </MudCardActions>
+                </MudCard>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+<style>
+    .hover-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+        }
+</style>
+
+@code {
+    private LoanProduct[]? products;
+    private HashSet<int> favoriteIds = new(); // Здесь храним ID лайкнутых продуктов для быстрого поиска
+    private Timer? autoUpdateTimer;
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Проверяем, вошел ли пользователь
+        var state = await AuthState.GetAuthenticationStateAsync();
+        isAuthenticated = state.User.Identity?.IsAuthenticated ?? false;
+
+        await LoadData();
+
+        // Автообновление каждые 15 секунд
+        autoUpdateTimer = new Timer(async _ =>
+        {
+            await LoadProducts();
+            await InvokeAsync(StateHasChanged);
+        }, null, 15000, 15000);
+    }
+
+    private async Task LoadData()
+    {
+        await LoadProducts();
+
+        // Если пользователь вошел, загружаем его лайки
+        if (isAuthenticated)
+        {
+            try
+            {
+                var ids = await Http.GetFromJsonAsync<List<int>>("api/favorites/ids");
+                if (ids != null) favoriteIds = ids.ToHashSet();
+            }
+            catch { }
+        }
+    }
+
+    private async Task LoadProducts()
+    {
+        try
+        {
+            products = await Http.GetFromJsonAsync<LoanProduct[]>("api/products");
+        }
+        catch { }
+    }
+
+    private async Task ToggleFavorite(int productId)
+    {
+        if (!isAuthenticated)
+        {
+            Snackbar.Add("Чтобы добавить в избранное, нужно войти в систему!", Severity.Warning);
+            return;
+        }
+
+        try
+        {
+            // Отправляем запрос на сервер
+            var response = await Http.PostAsync($"api/favorites/toggle/{productId}", null);
+
+            if (response.IsSuccessStatusCode)
+            {
+                // Если успешно, меняем состояние сердечка локально (чтобы не перезагружать всю страницу)
+                if (favoriteIds.Contains(productId))
+                {
+                    favoriteIds.Remove(productId);
+                    Snackbar.Add("Удалено из избранного", Severity.Normal);
+                }
+                else
+                {
+                    favoriteIds.Add(productId);
+                    Snackbar.Add("Добавлено в избранное", Severity.Success);
+                }
+            }
+        }
+        catch
+        {
+            Snackbar.Add("Ошибка соединения с сервером", Severity.Error);
+        }
+    }
+
+    private string GetBankColor(string bankName)
+    {
+        if (string.IsNullOrEmpty(bankName)) return "#757575";
+        if (bankName.Contains("Сбер", StringComparison.OrdinalIgnoreCase)) return "#21a038";
+        if (bankName.Contains("ВТБ", StringComparison.OrdinalIgnoreCase)) return "#002882";
+        if (bankName.Contains("Альфа", StringComparison.OrdinalIgnoreCase)) return "#ef3124";
+        if (bankName.Contains("Россельхоз", StringComparison.OrdinalIgnoreCase) || bankName.Contains("РСХБ")) return "#00aa00";
+        return "#594ae2";
+    }
+
+    public void Dispose() => autoUpdateTimer?.Dispose();
+}

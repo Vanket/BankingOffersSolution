@@ -1,0 +1,73 @@
+﻿@page "/apply-mortgage"
+@using BankingOffers.Frontend.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject NavigationManager NavManager
+@inject AuthenticationStateProvider AuthState
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
+    <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-6">📝 Оформление ипотеки</MudText>
+
+    @if (!isAuthenticated)
+    {
+        <MudAlert Severity="Severity.Warning" Class="mb-4">
+            Для подачи заявки необходимо <MudLink Href="/login">войти в систему</MudLink>.
+        </MudAlert>
+    }
+    else
+    {
+        <MudCard Elevation="3">
+            <MudCardContent>
+                <EditForm Model="@form" OnValidSubmit="SendApplication">
+                    <DataAnnotationsValidator />
+                    <MudGrid>
+                        <MudItem xs="6">
+                            <MudTextField Label="Имя" @bind-Value="form.FirstName" For="@(() => form.FirstName)" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="6">
+                            <MudTextField Label="Фамилия" @bind-Value="form.LastName" For="@(() => form.LastName)" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudNumericField Label="Ежемесячный доход (₽)" @bind-Value="form.IncomePerMonth" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudNumericField Label="Сумма кредита (₽)" @bind-Value="form.RequestedAmount" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudNumericField Label="Стоимость недвижимости (₽)" @bind-Value="form.PropertyCost" Variant="Variant.Outlined" />
+                        </MudItem>
+                        <MudItem xs="12">
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">Отправить заявку</MudButton>
+                        </MudItem>
+                    </MudGrid>
+                </EditForm>
+            </MudCardContent>
+        </MudCard>
+    }
+</MudContainer>
+
+@code {
+    private MortgageApplicationForm form = new();
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthState.GetAuthenticationStateAsync();
+        isAuthenticated = state.User.Identity?.IsAuthenticated ?? false;
+    }
+
+    private async Task SendApplication()
+    {
+        var response = await Http.PostAsJsonAsync("api/mortgages/apply", form);
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Заявка отправлена!", Severity.Success);
+            NavManager.NavigateTo("/profile");
+        }
+        else
+        {
+            Snackbar.Add("Ошибка отправки.", Severity.Error);
+        }
+    }
+}

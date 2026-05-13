@@ -1,0 +1,43 @@
+﻿@page "/register"
+@layout LoginLayout
+@using BankingOffers.Frontend.Models
+@inject HttpClient Http
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+
+<MudGrid Justify="Justify.Center" Class="mt-10">
+    <MudItem xs="12" sm="8" md="4">
+        <MudCard Class="pa-4 fade-in-card">
+            <MudCardHeader>
+                <CardHeaderContent><MudText Typo="Typo.h5" Align="Align.Center">Регистрация</MudText></CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTextField @bind-Value="regDto.FirstName" Label="Имя" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="regDto.LastName" Label="Фамилия" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="regDto.Email" Label="Email" Variant="Variant.Outlined" Class="mb-3" />
+                <MudTextField @bind-Value="regDto.Password" Label="Пароль" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-3" />
+
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large" FullWidth="true" OnClick="DoRegister">Зарегистрироваться</MudButton>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    RegisterDto regDto = new();
+
+    async Task DoRegister()
+    {
+        var response = await Http.PostAsJsonAsync("api/auth/register", regDto);
+        if (response.IsSuccessStatusCode)
+        {
+            Snackbar.Add("Успешно! Теперь войдите.", Severity.Success);
+            NavManager.NavigateTo("/login");
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            Snackbar.Add(error, Severity.Error);
+        }
+    }
+}

@@ -1,0 +1,56 @@
+﻿@inherits LayoutComponentBase
+@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavManager
+
+<MudThemeProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="1" Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudText Typo="Typo.h5" Class="ml-3">BankAggregator</MudText>
+        <MudSpacer />
+
+        <AuthorizeView>
+            <Authorized>
+                <!-- Ищем в claims имя (given_name), если нет - показываем email -->
+                <MudText Class="mr-4">
+                    Привет, <b>@context.User.Claims.FirstOrDefault(c => c.Type == "given_name" || c.Type == ClaimTypes.GivenName)?.Value</b>
+                </MudText>
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="Logout" StartIcon="@Icons.Material.Filled.Logout">Выйти</MudButton>
+            </Authorized>
+            <NotAuthorized>
+                <MudLink Href="/Login" Color="Color.Secondary" Class="mud-button-root mud-button mud-button-text mud-button-text-inherit mud-ripple">Войти</MudLink>
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Class="ml-2" OnClick='() => NavManager.NavigateTo("/Register")'>Регистрация</MudButton>
+            </NotAuthorized>
+        </AuthorizeView>
+
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+        <NavMenu />
+    </MudDrawer>
+
+    <MudMainContent Class="pt-16 px-4">
+        <MudContainer MaxWidth="MaxWidth.Large" Class="mt-4">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = true;
+    void DrawerToggle() => _drawerOpen = !_drawerOpen;
+
+    async Task Logout()
+    {
+        await LocalStorage.RemoveItemAsync("authToken");
+        await AuthStateProvider.GetAuthenticationStateAsync();
+        NavManager.NavigateTo("/");
+    }
+}

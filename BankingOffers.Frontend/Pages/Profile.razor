@@ -1,0 +1,73 @@
+﻿@page "/profile"
+@using BankingOffers.Frontend.Models
+@using Microsoft.AspNetCore.Components.Authorization
+@inject HttpClient Http
+@attribute [Authorize]
+@using Microsoft.AspNetCore.Authorization
+<MudContainer MaxWidth="MaxWidth.Large" Class="mt-5">
+    <MudText Typo="Typo.h4" Class="mb-4">👤 Личный кабинет</MudText>
+
+    <MudTabs Elevation="2" Rounded="true" ApplyEffectsToContainer="true" PanelClass="pa-6">
+        <MudTabPanel Text="Мои заявки" Icon="@Icons.Material.Filled.Assignment">
+            @if (myApps == null)
+            {
+                <MudProgressCircular Indeterminate="true" />
+            }
+            else if (myApps.Count == 0)
+            {
+                <MudText>У вас пока нет заявок.</MudText>
+            }
+            else
+            {
+                <MudTable Items="@myApps" Hover="true">
+                    <HeaderContent>
+                        <MudTh>Дата</MudTh>
+                        <MudTh>Сумма</MudTh>
+                        <MudTh>Статус</MudTh>
+                    </HeaderContent>
+                    <RowTemplate>
+                        <MudTd>@context.CreatedAt.ToShortDateString()</MudTd>
+                        <MudTd>@context.RequestedAmount.ToString("N0") ₽</MudTd>
+                        <MudTd><MudChip T="String" Color="Color.Info">@context.Status</MudChip></MudTd>
+                    </RowTemplate>
+                </MudTable>
+            }
+        </MudTabPanel>
+        
+        <MudTabPanel Text="Избранное" Icon="@Icons.Material.Filled.Favorite">
+            @if (myFavorites == null)
+            {
+                <MudProgressCircular Indeterminate="true" />
+            }
+            else if (myFavorites.Count == 0)
+            {
+                <MudText>Вы ничего не добавили в избранное.</MudText>
+            }
+            else
+            {
+                <MudList T="string">
+                    @foreach(var fav in myFavorites)
+                    {
+                        <MudListItem Icon="@Icons.Material.Filled.Bookmark">
+                            @fav.BankName - @fav.ProductName (@fav.InterestRate% / до @fav.MaxAmount ₽)
+                            <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@fav.Url" Target="_blank">Перейти</MudButton>
+                        </MudListItem>
+                    }
+                </MudList>
+            }
+        </MudTabPanel>
+    </MudTabs>
+</MudContainer>
+
+@code {
+    private List<MortgageApplicationView>? myApps;
+    private List<LoanProduct>? myFavorites;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try {
+            myApps = await Http.GetFromJsonAsync<List<MortgageApplicationView>>("api/mortgages/my");
+            myFavorites = await Http.GetFromJsonAsync<List<LoanProduct>>("api/favorites");
+        } catch {}
+    }
+}

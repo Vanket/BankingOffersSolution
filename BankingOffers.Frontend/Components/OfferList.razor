@@ -1,0 +1,70 @@
+﻿@using BankingOffers.Frontend.Models
+
+@if (Products == null)
+{
+    <div class="d-flex justify-content-center mt-5">
+        <MudProgressCircular Color="Color.Primary" Indeterminate="true" Size="Size.Large" />
+    </div>
+}
+else if (!Products.Any())
+{
+    <MudAlert Severity="Severity.Info">Предложений пока нет. Данные обновляются...</MudAlert>
+}
+else
+{
+    <MudGrid>
+        @foreach (var (product, index) in Products.Select((x, i) => (x, i)))
+        {
+            <MudItem xs="12" sm="6" md="4">
+                <div class="fade-in-card" style="animation-delay: @(index * 0.1)s;">
+                    <MudCard Class="offer-card h-100">
+                        <MudCardHeader>
+                            <CardHeaderAvatar>
+                                <div class="bank-logo-placeholder" style="background-color: @GetColor(product.BankName)">
+                                    @product.BankName.Substring(0, 1)
+                                </div>
+                            </CardHeaderAvatar>
+                            <CardHeaderContent>
+                                <MudText Typo="Typo.h6">@product.BankName</MudText>
+                                <MudText Typo="Typo.body2">@product.ProgramName</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                                <div>
+                                    <MudText Typo="Typo.caption">Ставка</MudText>
+                                    <MudText Typo="Typo.h5" Color="Color.Primary"><b>@product.MinInterestRate.ToString("0.##")%</b></MudText>
+                                </div>
+                                <div class="text-end">
+                                    <MudText Typo="Typo.caption">Сумма до</MudText>
+                                    <MudText Typo="Typo.h6">@product.MaxAmount.ToString("N0") ₽</MudText>
+                                </div>
+                            </MudStack>
+                            <MudDivider Class="my-3" />
+                            <MudText Typo="Typo.body2">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
+                                Срок до: <b>@product.MaxTermInYears лет</b>
+                            </MudText>
+                        </MudCardContent>
+                        <MudCardActions>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" Href="@product.Url" Target="_blank">Оформить</MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </div>
+            </MudItem>
+        }
+    </MudGrid>
+}
+
+@code {
+    [Parameter] public IEnumerable<dynamic>? Products { get; set; }
+
+    // Генерируем цвет аватарки в зависимости от названия банка
+    private string GetColor(string name)
+    {
+        if (name.Contains("Сбер")) return "#21a038";
+        if (name.Contains("ВТБ")) return "#002882";
+        if (name.Contains("Альфа")) return "#ef3124";
+        return "#757575"; // Серый по умолчанию
+    }
+}

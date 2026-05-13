@@ -1,0 +1,52 @@
+﻿@page "/login"
+@layout LoginLayout
+@using BankingOffers.Frontend.Models
+@using Blazored.LocalStorage
+@using Microsoft.AspNetCore.Components.Authorization
+@inject HttpClient Http
+@inject ILocalStorageService LocalStorage
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager NavManager
+@inject ISnackbar Snackbar
+
+<MudGrid Justify="Justify.Center" Class="mt-10">
+    <MudItem xs="12" sm="8" md="4">
+        <MudCard Class="pa-4 fade-in-card">
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h5" Align="Align.Center">Вход в систему</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudTextField @bind-Value="loginDto.Email" Label="Email" Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Email" />
+                <MudTextField @bind-Value="loginDto.Password" Label="Пароль" Variant="Variant.Outlined" InputType="InputType.Password" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Filled.Lock" Class="mt-3" />
+
+                <MudButton Variant="Variant.Filled" Href="/profile" Color="Color.Primary" Size="Size.Large" FullWidth="true" Class="mt-6" OnClick="DoLogin">Войти</MudButton>
+
+                <div class="d-flex justify-center mt-4">
+                    <MudLink Href="/register">Нет аккаунта? Зарегистрироваться</MudLink>
+                </div>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    LoginDto loginDto = new();
+
+    async Task DoLogin()
+    {
+        var response = await Http.PostAsJsonAsync("api/auth/login", loginDto);
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<LoginResponse>();
+            await LocalStorage.SetItemAsync("authToken", result.Token);
+            await AuthStateProvider.GetAuthenticationStateAsync(); // Обновляем состояние
+            NavManager.NavigateTo("/");
+        }
+        else
+        {
+            Snackbar.Add("Ошибка входа. Проверьте данные.", Severity.Error);
+        }
+    }
+}

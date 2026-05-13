@@ -2,21 +2,27 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    background-color: #f4f6f9; /* Приятный светло-серый фон для всего сайта */
+    min-height: 100vh;
 }
 
 main {
     flex: 1;
 }
 
+/* Твой градиент отличный, оставляем, но делаем его более сочным */
 .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
+    background: linear-gradient(180deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.15); /* Тень от бокового меню */
+    z-index: 2;
 }
 
 .top-row {
-    background-color: #f7f7f7;
-    border-bottom: 1px solid #d6d5d5;
+    background-color: #ffffff; /* Белая верхняя панель */
+    border-bottom: none;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); /* Мягкая тень снизу */
     justify-content: flex-end;
-    height: 3.5rem;
+    height: 4rem; /* Совпадает с высотой в меню */
     display: flex;
     align-items: center;
 }
@@ -25,24 +31,31 @@ main {
         white-space: nowrap;
         margin-left: 1.5rem;
         text-decoration: none;
+        color: #495057;
+        font-weight: 500;
+        transition: color 0.2s ease;
     }
 
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
-    }
+        .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
+            color: #052767; /* Цвет при наведении */
+        }
 
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
+/* Стилизация области контента */
+article {
+    padding: 2rem;
+}
 
 @media (max-width: 640.98px) {
     .top-row {
         justify-content: space-between;
     }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
+        .top-row ::deep a, .top-row ::deep .btn-link {
+            margin-left: 0;
+        }
+
+    article {
+        padding: 1rem;
     }
 }
 
@@ -52,7 +65,7 @@ main {
     }
 
     .sidebar {
-        width: 250px;
+        width: 260px; /* Чуть шире для красоты */
         height: 100vh;
         position: sticky;
         top: 0;
@@ -64,14 +77,8 @@ main {
         z-index: 1;
     }
 
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
     .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
+        padding-left: 2.5rem !important;
+        padding-right: 2.5rem !important;
     }
 }

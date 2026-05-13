@@ -1,0 +1,72 @@
+﻿@page "/"
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="mt-6 mb-10">
+    <!-- Главный баннер (Hero Section) -->
+    <MudPaper Class="pa-10 rounded-xl mb-10 hero-banner" Elevation="3">
+        <MudGrid AlignItems="AlignItems.Center">
+            <MudItem xs="12" md="7">
+                <MudText Typo="Typo.h2" Style="font-weight: 800; color: white;" Class="mb-4">
+                    Ваш надежный гид в мире финансов
+                </MudText>
+                <MudText Typo="Typo.h5" Style="color: rgba(255, 255, 255, 0.9);" Class="mb-8">
+                    Сравнивайте кредиты, находите лучшие ставки и оформляйте ипотеку прямо из дома.
+                </MudText>
+                
+                <MudStack Row="true" Spacing="4">
+                    <MudButton Href="/offers" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Large" Class="rounded-pill px-6 py-3" Style="background-color: white; color: #052767; font-weight: bold;">
+                        Смотреть кредиты
+                    </MudButton>
+                    <MudButton Href="/apply-mortgage" Variant="Variant.Outlined" Size="Size.Large" Class="rounded-pill px-6 py-3" Style="color: white; border-color: white; border-width: 2px;">
+                        Оформить ипотеку
+                    </MudButton>
+                </MudStack>
+            </MudItem>
+            <MudItem xs="12" md="5" Class="d-flex justify-center">
+                <!-- Большая иконка для красоты -->
+                <MudIcon Icon="@Icons.Material.Filled.AccountBalance" Style="font-size: 15rem; color: rgba(255, 255, 255, 0.2);" />
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+
+    <!-- Преимущества -->
+    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight: 700; color: #052767;" Class="mb-8">Почему выбирают нас</MudText>
+    
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2" Class="rounded-xl pa-4 h-100 text-center hover-up">
+                <MudIcon Icon="@Icons.Material.Filled.Percent" Color="Color.Primary" Style="font-size: 4rem;" Class="mb-4" />
+                <MudText Typo="Typo.h6" Style="font-weight: 600;">Выгодные ставки</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Сотрудничаем с топовыми банками для предоставления минимальных процентов.</MudText>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2" Class="rounded-xl pa-4 h-100 text-center hover-up">
+                <MudIcon Icon="@Icons.Material.Filled.Speed" Color="Color.Success" Style="font-size: 4rem;" Class="mb-4" />
+                <MudText Typo="Typo.h6" Style="font-weight: 600;">Быстрое одобрение</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Подайте одну заявку и получите решение от нескольких банков за 5 минут.</MudText>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudCard Elevation="2" Class="rounded-xl pa-4 h-100 text-center hover-up">
+                <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Info" Style="font-size: 4rem;" Class="mb-4" />
+                <MudText Typo="Typo.h6" Style="font-weight: 600;">Безопасность данных</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary">Ваши персональные данные надежно защищены современными алгоритмами шифрования.</MudText>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+<style>
+    .hero-banner {
+        background: linear-gradient(135deg, #052767 0%, #3a0647 100%);
+        box-shadow: 0 20px 40px rgba(5, 39, 103, 0.3) !important;
+    }
+    
+    .hover-up {
+        transition: transform 0.3s;
+    }
+
+        .hover-up:hover {
+            transform: translateY(-10px);
+        }
+</style>

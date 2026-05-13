@@ -8,46 +8,52 @@
 }
 else if (!Products.Any())
 {
-    <MudAlert Severity="Severity.Info">Предложений пока нет. Данные обновляются...</MudAlert>
+    <MudAlert Severity="Severity.Info" Class="rounded-lg">Предложений пока нет. Данные обновляются...</MudAlert>
 }
 else
 {
-    <MudGrid>
+    <MudGrid Spacing="4">
         @foreach (var (product, index) in Products.Select((x, i) => (x, i)))
         {
             <MudItem xs="12" sm="6" md="4">
-                <div class="fade-in-card" style="animation-delay: @(index * 0.1)s;">
-                    <MudCard Class="offer-card h-100">
+                <div class="fade-in-card" style="animation-delay: @(index * 0.05)s; height: 100%;">
+                    <MudCard Elevation="2" Class="h-100 modern-offer-card rounded-xl pa-2 d-flex flex-column">
                         <MudCardHeader>
                             <CardHeaderAvatar>
-                                <div class="bank-logo-placeholder" style="background-color: @GetColor(product.BankName)">
+                                <MudAvatar Size="Size.Medium" Style="@($"background-color: {GetColor(product.BankName)}; color: white; font-weight: bold;")">
                                     @product.BankName.Substring(0, 1)
-                                </div>
+                                </MudAvatar>
                             </CardHeaderAvatar>
                             <CardHeaderContent>
-                                <MudText Typo="Typo.h6">@product.BankName</MudText>
-                                <MudText Typo="Typo.body2">@product.ProgramName</MudText>
+                                <MudText Typo="Typo.h6" Style="font-weight: 600;">@product.BankName</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">@product.ProgramName</MudText>
                             </CardHeaderContent>
                         </MudCardHeader>
-                        <MudCardContent>
-                            <MudStack Row="true" Justify="Justify.SpaceBetween">
+                        
+                        <MudCardContent Class="flex-grow-1 pt-2">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.End">
                                 <div>
-                                    <MudText Typo="Typo.caption">Ставка</MudText>
-                                    <MudText Typo="Typo.h5" Color="Color.Primary"><b>@product.MinInterestRate.ToString("0.##")%</b></MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Ставка</MudText>
+                                    <MudText Typo="Typo.h5" Color="Color.Primary" Style="font-weight: 800;">@product.MinInterestRate.ToString("0.##")%</MudText>
                                 </div>
                                 <div class="text-end">
-                                    <MudText Typo="Typo.caption">Сумма до</MudText>
-                                    <MudText Typo="Typo.h6">@product.MaxAmount.ToString("N0") ₽</MudText>
+                                    <MudText Typo="Typo.caption" Color="Color.Secondary">Сумма до</MudText>
+                                    <MudText Typo="Typo.subtitle1" Style="font-weight: 600;">@product.MaxAmount.ToString("N0") ₽</MudText>
                                 </div>
                             </MudStack>
+                            
                             <MudDivider Class="my-3" />
+                            
                             <MudText Typo="Typo.body2">
-                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Size="Size.Small" Class="mr-1" />
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Size="Size.Small" Class="mr-1" Color="Color.Info" />
                                 Срок до: <b>@product.MaxTermInYears лет</b>
                             </MudText>
                         </MudCardContent>
-                        <MudCardActions>
-                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" Href="@product.Url" Target="_blank">Оформить</MudButton>
+                        
+                        <MudCardActions Class="px-4 pb-4">
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" FullWidth="true" Href="@product.Url" Target="_blank" Class="rounded-pill" Style="border-width: 2px;">
+                                Подробнее
+                            </MudButton>
                         </MudCardActions>
                     </MudCard>
                 </div>
@@ -55,6 +61,25 @@ else
         }
     </MudGrid>
 }
+
+<style>
+    .modern-offer-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .modern-offer-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.08) !important;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in-card {
+        opacity: 0;
+        animation: fadeIn 0.4s ease-out forwards;
+    }
+</style>
 
 @code {
     [Parameter] public IEnumerable<dynamic>? Products { get; set; }

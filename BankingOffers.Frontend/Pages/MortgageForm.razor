@@ -6,39 +6,62 @@
 @inject NavigationManager NavManager
 @inject AuthenticationStateProvider AuthState
 
-<MudContainer MaxWidth="MaxWidth.Small" Class="mt-8">
-    <MudText Typo="Typo.h4" Align="Align.Center" Class="mb-6">📝 Оформление ипотеки</MudText>
-
+<MudContainer MaxWidth="MaxWidth.Small" Class="mt-10 mb-10">
     @if (!isAuthenticated)
     {
-        <MudAlert Severity="Severity.Warning" Class="mb-4">
-            Для подачи заявки необходимо <MudLink Href="/login">войти в систему</MudLink>.
+        <MudAlert Severity="Severity.Warning" Class="mb-4 rounded-lg shadow-sm" Variant="Variant.Filled">
+            <MudText>Для подачи заявки необходимо <MudLink Href="/login" Style="color: white; text-decoration: underline;">войти в систему</MudLink>.</MudText>
         </MudAlert>
     }
     else
     {
-        <MudCard Elevation="3">
-            <MudCardContent>
+        <MudCard Elevation="4" Class="rounded-xl overflow-hidden">
+            <div style="background: linear-gradient(135deg, #052767 0%, #3a0647 100%); padding: 30px; text-align: center; color: white;">
+                <MudIcon Icon="@Icons.Material.Filled.RealEstateAgent" Style="font-size: 4rem;" Class="mb-3" />
+                <MudText Typo="Typo.h4" Style="font-weight: 700;">Ипотека онлайн</MudText>
+                <MudText Typo="Typo.body1" Style="opacity: 0.8;">Заполните данные для предварительного одобрения</MudText>
+            </div>
+
+            <MudCardContent Class="pa-6">
                 <EditForm Model="@form" OnValidSubmit="SendApplication">
                     <DataAnnotationsValidator />
-                    <MudGrid>
-                        <MudItem xs="6">
-                            <MudTextField Label="Имя" @bind-Value="form.FirstName" For="@(() => form.FirstName)" Variant="Variant.Outlined" />
+                    <MudGrid Spacing="3">
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Label="Имя" @bind-Value="form.FirstName" For="@(() => form.FirstName)"
+                                          Variant="Variant.Outlined" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Person" />
                         </MudItem>
-                        <MudItem xs="6">
-                            <MudTextField Label="Фамилия" @bind-Value="form.LastName" For="@(() => form.LastName)" Variant="Variant.Outlined" />
+                        <MudItem xs="12" sm="6">
+                            <MudTextField Label="Фамилия" @bind-Value="form.LastName" For="@(() => form.LastName)"
+                                          Variant="Variant.Outlined" />
+                        </MudItem>
+                        
+                        <MudItem xs="12">
+                            <MudDivider Class="my-2" />
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">Финансовые данные</MudText>
+                        </MudItem>
+
+                        <MudItem xs="12">
+                            <MudNumericField Label="Ежемесячный доход" @bind-Value="form.IncomePerMonth"
+                                             Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentText="₽" HideSpinButtons="true" />
                         </MudItem>
                         <MudItem xs="12">
-                            <MudNumericField Label="Ежемесячный доход (₽)" @bind-Value="form.IncomePerMonth" Variant="Variant.Outlined" />
+                            <MudNumericField Label="Стоимость недвижимости" @bind-Value="form.PropertyCost"
+                                             Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentText="₽" HideSpinButtons="true" />
                         </MudItem>
                         <MudItem xs="12">
-                            <MudNumericField Label="Сумма кредита (₽)" @bind-Value="form.RequestedAmount" Variant="Variant.Outlined" />
+                            <MudNumericField Label="Желаемая сумма кредита" @bind-Value="form.RequestedAmount"
+                                             Variant="Variant.Outlined" Adornment="Adornment.End" AdornmentText="₽" HideSpinButtons="true"
+                                             Color="Color.Success" />
                         </MudItem>
-                        <MudItem xs="12">
-                            <MudNumericField Label="Стоимость недвижимости (₽)" @bind-Value="form.PropertyCost" Variant="Variant.Outlined" />
-                        </MudItem>
-                        <MudItem xs="12">
-                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Size="Size.Large">Отправить заявку</MudButton>
+
+                        <MudItem xs="12" Class="mt-4">
+                            <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary"
+                                       FullWidth="true" Size="Size.Large" Class="rounded-pill py-3" Style="font-weight: bold; font-size: 1.1rem;">
+                                Отправить заявку
+                            </MudButton>
+                            <MudText Typo="Typo.caption" Align="Align.Center" Class="d-block mt-3 text-muted">
+                                Нажимая кнопку, вы соглашаетесь с обработкой персональных данных.
+                            </MudText>
                         </MudItem>
                     </MudGrid>
                 </EditForm>

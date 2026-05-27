@@ -1,23 +1,36 @@
 ﻿@page "/register"
 @layout LoginLayout
 @using BankingOffers.Frontend.Models
+@using System.Net.Http.Json
+
+
+
 @inject HttpClient Http
 @inject NavigationManager NavManager
 @inject ISnackbar Snackbar
 
 <MudGrid Justify="Justify.Center" Class="mt-10">
     <MudItem xs="12" sm="8" md="4">
-        <MudCard Class="pa-4 fade-in-card">
+        <MudCard Class="pa-4 fade-in-card rounded-xl" Elevation="4">
             <MudCardHeader>
-                <CardHeaderContent><MudText Typo="Typo.h5" Align="Align.Center">Регистрация</MudText></CardHeaderContent>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h4" Align="Align.Center" Style="font-weight: 700; color: #052767;">Регистрация</MudText>
+                </CardHeaderContent>
             </MudCardHeader>
             <MudCardContent>
-                <MudTextField @bind-Value="regDto.FirstName" Label="Имя" Variant="Variant.Outlined" Class="mb-3" />
-                <MudTextField @bind-Value="regDto.LastName" Label="Фамилия" Variant="Variant.Outlined" Class="mb-3" />
-                <MudTextField @bind-Value="regDto.Email" Label="Email" Variant="Variant.Outlined" Class="mb-3" />
-                <MudTextField @bind-Value="regDto.Password" Label="Пароль" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-3" />
-
-                <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Large" FullWidth="true" OnClick="DoRegister">Зарегистрироваться</MudButton>
+                <MudTextField @bind-Value="regDto.FirstName" Label="Имя" Variant="Variant.Outlined" Class="mb-4" />
+                <MudTextField @bind-Value="regDto.LastName" Label="Фамилия" Variant="Variant.Outlined" Class="mb-4" />
+                <MudTextField @bind-Value="regDto.Email" Label="Email" Variant="Variant.Outlined" Class="mb-4" />
+                <MudTextField @bind-Value="regDto.Password" Label="Пароль" InputType="InputType.Password" Variant="Variant.Outlined" Class="mb-5" />
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           Size="Size.Large" 
+                           FullWidth="true" 
+                           Class="rounded-pill py-3"
+                           Style="font-weight: bold;"
+                           OnClick="@DoRegister">
+                           Зарегистрироваться
+                </MudButton>
             </MudCardContent>
         </MudCard>
     </MudItem>
@@ -28,16 +41,28 @@
 
     async Task DoRegister()
     {
-        var response = await Http.PostAsJsonAsync("api/auth/register", regDto);
-        if (response.IsSuccessStatusCode)
+        try
         {
-            Snackbar.Add("Успешно! Теперь войдите.", Severity.Success);
-            NavManager.NavigateTo("/login");
+            // Пытаемся отправить запрос
+            var response = await Http.PostAsJsonAsync("api/auth/register", regDto);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add("Успешно! Теперь войдите.", Severity.Success);
+                NavManager.NavigateTo("/login");
+            }
+            else
+            {
+                // Читаем ошибку от сервера
+                var error = await response.Content.ReadAsStringAsync();
+                Snackbar.Add($"Ошибка сервера: {error}", Severity.Error);
+            }
         }
-        else
+        catch (Exception ex)
         {
-            var error = await response.Content.ReadAsStringAsync();
-            Snackbar.Add(error, Severity.Error);
+            // Если сервер вообще недоступен (например, выключен API или ошибка CORS)
+            Snackbar.Add($"Проблема с соединением: {ex.Message}", Severity.Warning);
+            Console.WriteLine(ex.ToString()); // Выведет точную ошибку в консоль браузера (F12)
         }
     }
 }
